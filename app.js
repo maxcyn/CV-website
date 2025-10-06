@@ -45,7 +45,7 @@ function updateActiveNavLink() {
         const sectionTop = section.offsetTop;
         const sectionHeight = section.offsetHeight;
         const sectionId = section.getAttribute('id');
-        
+
         if (scrollPos >= sectionTop && scrollPos < sectionTop + sectionHeight) {
             navLinks.forEach(link => {
                 link.classList.remove('active');
@@ -57,7 +57,7 @@ function updateActiveNavLink() {
     });
 }
 
-// Navbar scroll effect
+// Add scrolled class to navbar
 function handleNavbarScroll() {
     if (window.scrollY > 50) {
         navbar.classList.add('scrolled');
@@ -66,146 +66,170 @@ function handleNavbarScroll() {
     }
 }
 
-// Animation on scroll
-function animateOnScroll() {
-    const elements = document.querySelectorAll('.card, .hero-content');
-    
+// Show CV modal
+function showCVModal() {
+    cvModal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+// Hide CV modal
+function hideCVModal() {
+    cvModal.classList.remove('active');
+    document.body.style.overflow = 'auto';
+}
+
+// Handle contact form submission
+function handleContactForm(e) {
+    e.preventDefault();
+
+    // Get form data
+    const formData = new FormData(contactForm);
+    const name = formData.get('name');
+    const email = formData.get('email');
+    const subject = formData.get('subject');
+    const message = formData.get('message');
+
+    // Simple validation
+    if (!name || !email || !subject || !message) {
+        alert('Please fill in all fields');
+        return;
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        alert('Please enter a valid email address');
+        return;
+    }
+
+    // Simulate form submission (in a real application, you would send this to a server)
+    alert(`Thank you ${name}! Your message about "${subject}" has been received. I'll get back to you at ${email} soon.`);
+
+    // Reset form
+    contactForm.reset();
+}
+
+// Fade in animation on scroll
+function handleScrollAnimations() {
+    const elements = document.querySelectorAll('.fade-in');
+
     elements.forEach(element => {
-        if (!element.classList.contains('fade-in')) {
-            element.classList.add('fade-in');
-        }
-        
         const elementTop = element.getBoundingClientRect().top;
         const elementVisible = 150;
-        
+
         if (elementTop < window.innerHeight - elementVisible) {
             element.classList.add('visible');
         }
     });
 }
 
-// Modal functions
-function openModal() {
-    cvModal.classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
-}
-
-function closeModal() {
-    cvModal.classList.add('hidden');
-    document.body.style.overflow = 'auto';
-}
-
-// Contact form submission
-function handleContactForm(e) {
-    e.preventDefault();
-    
-    const name = document.getElementById('name').value;
-    const email = document.getElementById('email').value;
-    const message = document.getElementById('message').value;
-    
-    // Create mailto link with form data
-    const subject = `Message from ${name} - CV Website`;
-    const body = `Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`;
-    const mailtoLink = `mailto:chongyn.max@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    
-    // Open default email client
-    window.open(mailtoLink);
-    
-    // Show success message
-    alert('Thank you for your message! Your default email client should now open with the message pre-filled.');
-    
-    // Reset form
-    contactForm.reset();
-}
-
 // Event listeners
 document.addEventListener('DOMContentLoaded', function() {
-    // Initial animations
-    setTimeout(() => {
-        animateOnScroll();
-    }, 100);
-    
-    // Make hero content visible immediately
-    const heroContent = document.querySelector('.hero-content');
-    if (heroContent) {
-        heroContent.classList.add('fade-in', 'visible');
+    // Mobile menu
+    if (mobileMenu) {
+        mobileMenu.addEventListener('click', toggleMobileMenu);
     }
-});
 
-// Mobile menu toggle
-mobileMenu.addEventListener('click', toggleMobileMenu);
-
-// Navigation links
-navLinks.forEach(link => {
-    link.addEventListener('click', function(e) {
-        e.preventDefault();
-        const target = this.getAttribute('href');
-        smoothScroll(target);
-        closeMobileMenu();
+    // Navigation links
+    navLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const target = this.getAttribute('href');
+            smoothScroll(target);
+            closeMobileMenu();
+        });
     });
-});
 
-// Scroll events
-window.addEventListener('scroll', function() {
-    handleNavbarScroll();
+    // Download CV button
+    if (downloadBtn) {
+        downloadBtn.addEventListener('click', showCVModal);
+    }
+
+    // Modal close buttons
+    if (modalClose) {
+        modalClose.addEventListener('click', hideCVModal);
+    }
+
+    if (modalCancel) {
+        modalCancel.addEventListener('click', hideCVModal);
+    }
+
+    if (modalBackdrop) {
+        modalBackdrop.addEventListener('click', hideCVModal);
+    }
+
+    // Contact form
+    if (contactForm) {
+        contactForm.addEventListener('submit', handleContactForm);
+    }
+
+    // Scroll events with throttling for better performance
+    let scrollTimeout;
+    window.addEventListener('scroll', function() {
+        if (!scrollTimeout) {
+            scrollTimeout = setTimeout(function() {
+                updateActiveNavLink();
+                handleNavbarScroll();
+                handleScrollAnimations();
+                scrollTimeout = null;
+            }, 10);
+        }
+    });
+
+    // Keyboard events
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            hideCVModal();
+            closeMobileMenu();
+        }
+    });
+
+    // Initialize
     updateActiveNavLink();
-    animateOnScroll();
+    handleScrollAnimations();
 });
 
-// Modal events
-downloadBtn.addEventListener('click', openModal);
-modalClose.addEventListener('click', closeModal);
-modalCancel.addEventListener('click', closeModal);
-modalBackdrop.addEventListener('click', closeModal);
+// Utility functions for future enhancements
+const utils = {
+    // Debounce function for performance optimization
+    debounce: function(func, wait, immediate) {
+        let timeout;
+        return function executedFunction() {
+            const context = this;
+            const args = arguments;
+            const later = function() {
+                timeout = null;
+                if (!immediate) func.apply(context, args);
+            };
+            const callNow = immediate && !timeout;
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+            if (callNow) func.apply(context, args);
+        };
+    },
 
-// Close modal on Escape key
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape' && !cvModal.classList.contains('hidden')) {
-        closeModal();
-    }
-});
-
-// Contact form
-contactForm.addEventListener('submit', handleContactForm);
-
-// Close mobile menu when clicking outside
-document.addEventListener('click', function(e) {
-    if (!navbar.contains(e.target) && navMenu.classList.contains('active')) {
-        closeMobileMenu();
-    }
-});
-
-// Prevent mobile menu from closing when clicking inside it
-navMenu.addEventListener('click', function(e) {
-    e.stopPropagation();
-});
-
-// Handle window resize
-window.addEventListener('resize', function() {
-    if (window.innerWidth > 768) {
-        closeMobileMenu();
-    }
-});
-
-// Initialize page
-window.addEventListener('load', function() {
-    // Set initial active nav link
-    updateActiveNavLink();
-    
-    // Ensure hero section is visible
-    const heroContent = document.querySelector('.hero-content');
-    if (heroContent) {
-        heroContent.classList.add('visible');
-    }
-    
-    // Add staggered animation to cards
-    const cards = document.querySelectorAll('.card');
-    cards.forEach((card, index) => {
-        setTimeout(() => {
-            card.classList.add('fade-in');
-            if (card.getBoundingClientRect().top < window.innerHeight) {
-                card.classList.add('visible');
+    // Throttle function for scroll events
+    throttle: function(func, limit) {
+        let inThrottle;
+        return function() {
+            const args = arguments;
+            const context = this;
+            if (!inThrottle) {
+                func.apply(context, args);
+                inThrottle = true;
+                setTimeout(() => inThrottle = false, limit);
             }
-        }, index * 100);
-    });
-});
+        }
+    },
+
+    // Check if element is in viewport
+    isInViewport: function(element) {
+        const rect = element.getBoundingClientRect();
+        return (
+            rect.top >= 0 &&
+            rect.left >= 0 &&
+            rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+            rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+        );
+    }
+};
