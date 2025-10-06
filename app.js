@@ -1,14 +1,8 @@
-// DOM elements
+// Navigation functionality for Max Chong CV website
 const navbar = document.getElementById('navbar');
 const mobileMenu = document.getElementById('mobile-menu');
 const navMenu = document.querySelector('.nav-menu');
 const navLinks = document.querySelectorAll('.nav-link');
-const downloadBtn = document.getElementById('downloadBtn');
-const cvModal = document.getElementById('cvModal');
-const modalBackdrop = document.getElementById('modalBackdrop');
-const modalClose = document.getElementById('modalClose');
-const modalCancel = document.getElementById('modalCancel');
-const contactForm = document.getElementById('contactForm');
 
 // Mobile menu toggle
 function toggleMobileMenu() {
@@ -36,7 +30,7 @@ function smoothScroll(target) {
     }
 }
 
-// Update active navigation link
+// Update active navigation link based on scroll position
 function updateActiveNavLink() {
     const sections = document.querySelectorAll('section[id]');
     const scrollPos = window.scrollY + 100;
@@ -57,56 +51,13 @@ function updateActiveNavLink() {
     });
 }
 
-// Add scrolled class to navbar
+// Add scrolled class to navbar for styling
 function handleNavbarScroll() {
     if (window.scrollY > 50) {
         navbar.classList.add('scrolled');
     } else {
         navbar.classList.remove('scrolled');
     }
-}
-
-// Show CV modal
-function showCVModal() {
-    cvModal.classList.add('active');
-    document.body.style.overflow = 'hidden';
-}
-
-// Hide CV modal
-function hideCVModal() {
-    cvModal.classList.remove('active');
-    document.body.style.overflow = 'auto';
-}
-
-// Handle contact form submission
-function handleContactForm(e) {
-    e.preventDefault();
-
-    // Get form data
-    const formData = new FormData(contactForm);
-    const name = formData.get('name');
-    const email = formData.get('email');
-    const subject = formData.get('subject');
-    const message = formData.get('message');
-
-    // Simple validation
-    if (!name || !email || !subject || !message) {
-        alert('Please fill in all fields');
-        return;
-    }
-
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-        alert('Please enter a valid email address');
-        return;
-    }
-
-    // Simulate form submission (in a real application, you would send this to a server)
-    alert(`Thank you ${name}! Your message about "${subject}" has been received. I'll get back to you at ${email} soon.`);
-
-    // Reset form
-    contactForm.reset();
 }
 
 // Fade in animation on scroll
@@ -123,14 +74,14 @@ function handleScrollAnimations() {
     });
 }
 
-// Event listeners
+// Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
-    // Mobile menu
+    // Mobile menu toggle
     if (mobileMenu) {
         mobileMenu.addEventListener('click', toggleMobileMenu);
     }
 
-    // Navigation links
+    // Navigation links smooth scroll
     navLinks.forEach(link => {
         link.addEventListener('click', function(e) {
             e.preventDefault();
@@ -140,30 +91,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Download CV button
-    if (downloadBtn) {
-        downloadBtn.addEventListener('click', showCVModal);
-    }
-
-    // Modal close buttons
-    if (modalClose) {
-        modalClose.addEventListener('click', hideCVModal);
-    }
-
-    if (modalCancel) {
-        modalCancel.addEventListener('click', hideCVModal);
-    }
-
-    if (modalBackdrop) {
-        modalBackdrop.addEventListener('click', hideCVModal);
-    }
-
-    // Contact form
-    if (contactForm) {
-        contactForm.addEventListener('submit', handleContactForm);
-    }
-
-    // Scroll events with throttling for better performance
+    // Scroll events with throttling for performance
     let scrollTimeout;
     window.addEventListener('scroll', function() {
         if (!scrollTimeout) {
@@ -176,22 +104,20 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Keyboard events
+    // Keyboard navigation
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
-            hideCVModal();
             closeMobileMenu();
         }
     });
 
-    // Initialize
+    // Initialize on page load
     updateActiveNavLink();
     handleScrollAnimations();
 });
 
-// Utility functions for future enhancements
+// Performance utilities
 const utils = {
-    // Debounce function for performance optimization
     debounce: function(func, wait, immediate) {
         let timeout;
         return function executedFunction() {
@@ -208,7 +134,6 @@ const utils = {
         };
     },
 
-    // Throttle function for scroll events
     throttle: function(func, limit) {
         let inThrottle;
         return function() {
@@ -220,16 +145,5 @@ const utils = {
                 setTimeout(() => inThrottle = false, limit);
             }
         }
-    },
-
-    // Check if element is in viewport
-    isInViewport: function(element) {
-        const rect = element.getBoundingClientRect();
-        return (
-            rect.top >= 0 &&
-            rect.left >= 0 &&
-            rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
-            rect.right <= (window.innerWidth || document.documentElement.clientWidth)
-        );
     }
 };
